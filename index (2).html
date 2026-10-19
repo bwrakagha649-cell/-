@@ -1,0 +1,593 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>كاشير المطعم</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&display=swap');
+*{box-sizing:border-box}
+:root{
+ --orange:#ff9800;
+ --orange2:#ffc107;
+ --orange-light:#fff7e6;
+ --green:#16a34a;
+ --green2:#22c55e;
+ --green-light:#ecfdf3;
+ --text:#202124;
+ --muted:#73777d;
+ --line:#e7eaee;
+ --bg:#f5f6f8;
+ --white:#fff;
+}
+body{margin:0;background:var(--bg);color:var(--text);font-family:Cairo,Arial,sans-serif}
+button,input{font-family:inherit}
+button{cursor:pointer;border:0}
+.header{position:sticky;top:0;z-index:20;background:#fff;border-bottom:1px solid var(--line);padding:10px 12px}
+.header-inner{max-width:900px;margin:auto;display:flex;align-items:center;gap:10px}
+.logo{width:48px;height:48px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,var(--orange),var(--orange2));box-shadow:0 5px 14px #ff980044;font-size:24px;flex:none}
+.header-title{flex:1}
+.header-title h1{margin:0;font-size:17px;font-weight:900}
+.header-title small{color:var(--muted);font-size:11px}
+.admin-open{background:#fff3dc;color:#c87500;border:1px solid #ffe0a3;border-radius:12px;padding:9px 11px;font-weight:800}
+.container{max-width:900px;margin:auto;padding:12px 12px 110px}
+.search{margin-bottom:10px}
+.search input{width:100%;border:1px solid var(--line);background:#fff;border-radius:14px;padding:12px 15px;outline:none;font-size:13px}
+.search input:focus{border-color:var(--orange2);box-shadow:0 0 0 3px #ffc10722}
+.categories{display:flex;gap:7px;overflow-x:auto;padding:2px 1px 9px;scrollbar-width:none}
+.categories::-webkit-scrollbar{display:none}
+.category{white-space:nowrap;background:#fff;border:1px solid var(--line);border-radius:999px;padding:8px 12px;font-size:12px;font-weight:800;color:#5e6268}
+.category.active{background:linear-gradient(135deg,var(--orange),var(--orange2));border-color:transparent;color:#fff;box-shadow:0 4px 12px #ff980033}
+.products{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+.product{background:#fff;border:1px solid var(--line);border-radius:15px;padding:11px;min-width:0}
+.product-icon{width:39px;height:39px;border-radius:12px;background:var(--orange-light);display:flex;align-items:center;justify-content:center;font-size:20px;margin-bottom:7px}
+.product-name{font-size:13px;font-weight:900;line-height:1.45;min-height:38px}
+.product-bottom{display:flex;align-items:center;justify-content:space-between;gap:6px;margin-top:8px}
+.price{font-size:13px;font-weight:900;color:#e48700}
+.add{background:linear-gradient(135deg,var(--orange),var(--orange2));color:#fff;border-radius:10px;padding:7px 10px;font-weight:900;font-size:12px}
+.empty{background:#fff;border:1px dashed #d8dce1;border-radius:15px;padding:25px;text-align:center;color:var(--muted);grid-column:1/-1}
+.cart-mini{position:fixed;bottom:12px;left:12px;right:12px;z-index:25;max-width:876px;margin:auto;background:linear-gradient(135deg,var(--green),var(--green2));color:#fff;border-radius:16px;padding:11px 14px;display:flex;align-items:center;gap:10px;box-shadow:0 8px 25px #16a34a44}
+.cart-icon{width:38px;height:38px;border-radius:12px;background:#ffffff22;display:flex;align-items:center;justify-content:center;font-size:20px}
+.cart-info{flex:1}.cart-info strong{display:block;font-size:13px}.cart-info small{font-size:10px;opacity:.9}
+.cart-price{font-size:15px;font-weight:900}
+.modal-overlay{position:fixed;inset:0;background:#0008;z-index:50;display:none;align-items:flex-end;justify-content:center}
+.modal-overlay.show{display:flex}
+.modal{background:#fff;width:min(100%,900px);max-height:92vh;overflow:auto;border-radius:22px 22px 0 0;padding:15px}
+.modal-handle{width:45px;height:5px;border-radius:10px;background:#ddd;margin:0 auto 12px}
+.modal-header{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px}
+.modal-header h2{font-size:17px;margin:0;font-weight:900}
+.modal-close{width:34px;height:34px;border-radius:50%;background:#f1f2f4;font-size:22px;color:#555}
+.cart-list{display:flex;flex-direction:column;gap:8px}
+.cart-row{display:flex;align-items:center;gap:9px;background:#f8f9fb;border:1px solid var(--line);border-radius:13px;padding:9px}
+.cart-row-info{flex:1;min-width:0}.cart-row-info strong{font-size:12px;display:block}.cart-row-info small{color:var(--muted);font-size:10px}
+.qty{display:flex;align-items:center;gap:6px}.qty button{width:28px;height:28px;border-radius:9px;background:#fff;border:1px solid var(--line);font-weight:900}.qty span{font-weight:900;min-width:18px;text-align:center}
+.cart-total{margin-top:12px;padding:12px;background:var(--green-light);border:1px solid #cdeed7;border-radius:14px;display:flex;justify-content:space-between;font-weight:900}
+.confirm{width:100%;margin-top:9px;background:linear-gradient(135deg,var(--green),var(--green2));color:#fff;border-radius:13px;padding:12px;font-weight:900}
+.admin-actions{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
+.admin-action{padding:12px;border-radius:13px;background:#f7f8fa;border:1px solid var(--line);font-weight:900;font-size:12px}
+.admin-action.orange{background:var(--orange-light);color:#c87500;border-color:#ffe0aa}
+.admin-action.green{background:var(--green-light);color:#16833e;border-color:#c9ecd5}
+.tabs{display:flex;gap:7px;margin:12px 0;overflow:auto}
+.tab{white-space:nowrap;padding:8px 12px;border-radius:999px;background:#f4f5f7;font-size:12px;font-weight:800}
+.tab.active{background:var(--orange);color:#fff}
+.form{display:flex;flex-direction:column;gap:9px}
+.form input,.form select{width:100%;padding:11px;border:1px solid var(--line);border-radius:12px;outline:none}
+.form label{font-size:11px;font-weight:800;color:#555}
+.save-btn,.login-btn{width:100%;padding:12px;border-radius:12px;background:linear-gradient(135deg,var(--orange),var(--orange2));color:#fff;font-weight:900}
+.item-list{display:flex;flex-direction:column;gap:7px}
+.item-admin{display:flex;align-items:center;gap:8px;padding:9px;background:#f8f9fb;border:1px solid var(--line);border-radius:12px}
+.item-admin-info{flex:1;min-width:0}.item-admin-info strong{display:block;font-size:12px}.item-admin-info small{font-size:10px;color:var(--muted)}
+.edit-btn{background:#fff1d6;color:#c87500;border-radius:9px;padding:7px 9px;font-weight:900;font-size:11px}
+.delete-btn{background:#fff0f0;color:#d93025;border-radius:9px;padding:7px 9px;font-weight:900;font-size:11px}
+.login-box{max-width:420px;margin:auto;width:100%}
+.login-box input{width:100%;padding:13px;border:1px solid var(--line);border-radius:12px;margin-bottom:9px;text-align:center;font-size:18px}
+.report-filter{background:#f8f9fb;border:1px solid var(--line);border-radius:14px;padding:10px;margin-bottom:12px}
+.report-filter label{display:block;font-size:11px;font-weight:900;margin-bottom:6px}
+.report-filter input{width:100%;padding:10px;border:1px solid var(--line);border-radius:11px;background:#fff}
+.report-summary{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
+.report-card{background:#fff;border:1px solid var(--line);border-radius:14px;padding:11px}
+.report-card.green{background:var(--green-light);border-color:#ccefd9}
+.report-card.orange{background:var(--orange-light);border-color:#ffe1a8}
+.report-card small{display:block;color:var(--muted);font-size:10px;font-weight:800}
+.report-card .value{display:block;margin-top:3px;font-size:17px;font-weight:900}
+.report-section{margin-top:14px}
+.report-section-title{font-size:13px;font-weight:900;margin-bottom:8px}
+.report-list{display:flex;flex-direction:column;gap:7px}
+.report-row{background:#f8f9fb;border:1px solid var(--line);border-radius:13px;padding:10px}
+.report-row-top{display:flex;align-items:center;gap:8px}
+.report-row-icon{width:34px;height:34px;border-radius:10px;background:var(--orange-light);display:flex;align-items:center;justify-content:center}
+.report-row-info{flex:1;min-width:0}.report-row-info strong{display:block;font-size:12px}.report-row-info small{color:var(--muted);font-size:10px}
+.report-money{color:var(--green);font-weight:900;font-size:13px}
+.report-meta{display:flex;justify-content:space-between;gap:8px;margin-top:7px;font-size:10px;color:#666}
+.report-progress{height:7px;background:#e9edf1;border-radius:20px;overflow:hidden;margin-top:8px}
+.report-progress span{display:block;height:100%;background:linear-gradient(90deg,var(--orange),var(--orange2));border-radius:20px}
+.report-day-row{display:flex;justify-content:space-between;align-items:center;background:#f8f9fb;border:1px solid var(--line);border-radius:12px;padding:10px}
+.report-day-row strong{font-size:12px}.report-day-row span{font-weight:900;color:var(--green);font-size:12px}
+.report-empty{background:#f8f9fb;border:1px dashed #d8dce1;border-radius:14px;text-align:center;padding:25px;color:var(--muted);font-size:12px}
+.note{background:#fff8e8;border:1px solid #ffe3ad;border-radius:12px;padding:10px;color:#96600a;font-size:10px;margin-top:10px}
+@media(min-width:650px){.products{grid-template-columns:repeat(3,minmax(0,1fr))}.report-summary{grid-template-columns:repeat(4,1fr)}}
+</style>
+</head>
+<body>
+
+<header class="header">
+<div class="header-inner">
+<div class="logo">🍽️</div>
+<div class="header-title"><h1>كاشير المطعم</h1><small>نظام إدارة الطلبات والمبيعات</small></div>
+<button class="admin-open" onclick="openLogin()">⚙️ الإدارة</button>
+</div>
+</header>
+
+<main class="container">
+<div class="search"><input id="searchInput" type="search" placeholder="🔎 ابحث عن صنف..." oninput="renderProducts()"></div>
+<div class="categories" id="categories"></div>
+<div class="products" id="products"></div>
+</main>
+
+<div class="cart-mini" onclick="openCart()">
+<div class="cart-icon">🛒</div>
+<div class="cart-info"><strong>الطلب الحالي</strong><small id="cartMiniCount">لا توجد أصناف</small></div>
+<div class="cart-price" id="cartMiniTotal">0 ريال</div>
+</div>
+
+<div class="modal-overlay" id="cartOverlay" onclick="closeCart(event)">
+<div class="modal" onclick="event.stopPropagation()">
+<div class="modal-handle"></div>
+<div class="modal-header"><h2>🛒 الطلب الحالي</h2><button class="modal-close" onclick="closeCart()">×</button></div>
+<div id="cartList" class="cart-list"></div>
+<div id="cartTotalBox"></div>
+</div>
+</div>
+
+<div class="modal-overlay" id="loginOverlay" onclick="closeLogin(event)">
+<div class="modal login-box" onclick="event.stopPropagation()">
+<div class="modal-handle"></div>
+<div class="modal-header"><h2>🔐 دخول الإدارة</h2><button class="modal-close" onclick="closeLogin()">×</button></div>
+<input id="loginPassword" type="password" placeholder="كلمة المرور">
+<button class="login-btn" onclick="login()">دخول</button>
+</div>
+</div>
+
+<div class="modal-overlay" id="adminOverlay" onclick="closeAdmin(event)">
+<div class="modal" onclick="event.stopPropagation()">
+<div class="modal-handle"></div>
+<div class="modal-header"><h2>⚙️ لوحة الإدارة</h2><button class="modal-close" onclick="closeAdmin()">×</button></div>
+
+<div class="admin-actions">
+<button class="admin-action orange" onclick="openProductForm()">➕ إضافة صنف</button>
+<button class="admin-action orange" onclick="openCategoryForm()">📂 إضافة قسم</button>
+<button class="admin-action green" onclick="openReports()">📊 التقارير</button>
+<button class="admin-action" onclick="exportData()">💾 نسخ احتياطي</button>
+<button class="admin-action" onclick="triggerImport()">📥 استعادة البيانات</button>
+<button class="admin-action" onclick="changePassword()">🔑 تغيير كلمة المرور</button>
+<button class="admin-action" onclick="resetData()">♻️ إعادة بيانات القائمة</button>
+</div>
+<input type="file" id="importFile" accept=".json" style="display:none" onchange="importData(event)">
+
+<div class="tabs">
+<button class="tab active" id="tabProducts" onclick="switchAdminTab('products')">🍽️ الأصناف</button>
+<button class="tab" id="tabCategories" onclick="switchAdminTab('categories')">📂 الأقسام</button>
+</div>
+<div id="adminContent"></div>
+</div>
+</div>
+
+<div class="modal-overlay" id="productFormOverlay" onclick="closeProductForm(event)">
+<div class="modal" onclick="event.stopPropagation()">
+<div class="modal-handle"></div>
+<div class="modal-header"><h2 id="productFormTitle">➕ إضافة صنف</h2><button class="modal-close" onclick="closeProductForm()">×</button></div>
+<div class="form">
+<label>اسم الصنف</label><input id="productName" placeholder="مثال: كباب">
+<label>السعر</label><input id="productPrice" type="number" min="0" placeholder="مثال: 3000">
+<label>القسم</label><select id="productCategory"></select>
+<button class="save-btn" onclick="saveProduct()">حفظ</button>
+</div>
+</div>
+</div>
+
+<div class="modal-overlay" id="categoryFormOverlay" onclick="closeCategoryForm(event)">
+<div class="modal" onclick="event.stopPropagation()">
+<div class="modal-handle"></div>
+<div class="modal-header"><h2 id="categoryFormTitle">📂 إضافة قسم</h2><button class="modal-close" onclick="closeCategoryForm()">×</button></div>
+<div class="form">
+<label>اسم القسم</label><input id="categoryName" placeholder="مثال: المشروبات">
+<label>الأيقونة</label><input id="categoryIcon" placeholder="🍹">
+<button class="save-btn" onclick="saveCategory()">حفظ</button>
+</div>
+</div>
+</div>
+
+<div class="modal-overlay" id="reportsOverlay" onclick="closeReports(event)">
+<div class="modal" onclick="event.stopPropagation()">
+<div class="modal-handle"></div>
+<div class="modal-header"><h2>📊 تقارير المبيعات</h2><button class="modal-close" onclick="closeReports()">×</button></div>
+<div class="report-filter">
+<label>اختر الشهر</label>
+<input type="month" id="reportMonth" onchange="renderReports()">
+</div>
+<div id="reportContent"></div>
+</div>
+</div>
+
+<script>
+const defaultCategories=[
+{id:"c1",name:"الصبوح",icon:"🌅"},
+{id:"c2",name:"محروقات",icon:"🔥"},
+{id:"c3",name:"شاي وقهوة",icon:"☕"},
+{id:"c4",name:"برست وبرجر",icon:"🍔"},
+{id:"c5",name:"اكلات شعبية",icon:"🍲"},
+{id:"c6",name:"مضغوط وفحسة",icon:"🍛"},
+{id:"c7",name:"مشاوي",icon:"🔥"},
+{id:"c8",name:"رز مع الحم",icon:"🍚"},
+{id:"c9",name:"رز مع الدجاج",icon:"🍗"},
+{id:"c10",name:"مقبلات",icon:"🥗"},
+{id:"c11",name:"عصائر",icon:"🧃"},
+{id:"c12",name:"مشروبات",icon:"🥤"}
+];
+
+const defaultProducts=[
+["كبدة",2000,"الصبوح"],["لحم صغار",1700,"الصبوح"],["فاصولياء",500,"الصبوح"],["فول",500,"الصبوح"],["بزالياء",500,"الصبوح"],["بيض",600,"الصبوح"],["طبق مكس",2000,"الصبوح"],["شاي حليب",200,"الصبوح"],["شاي أحمر",100,"الصبوح"],["خبز دبل",600,"الصبوح"],["خبز سنجل",400,"الصبوح"],["خبز شامي",100,"الصبوح"],
+["مشكل مشاوي صغير",3500,"محروقات"],["مشكل مشاوي وسط",5000,"محروقات"],["مشكل مشاوي كبير",10000,"محروقات"],["كباب لحم",3000,"محروقات"],["دجاج مشوي",3500,"محروقات"],
+["شاي أحمر",500,"شاي وقهوة"],["شاي حليب",700,"شاي وقهوة"],["قهوة",500,"شاي وقهوة"],["قهوة بالحليب",800,"شاي وقهوة"],
+["برست دجاج",2500,"برست وبرجر"],["برست حار",2800,"برست وبرجر"],["برجر لحم",2500,"برست وبرجر"],["برجر دجاج",2200,"برست وبرجر"],
+["سلتة",2000,"اكلات شعبية"],["شفوت",1500,"اكلات شعبية"],["فتة",1800,"اكلات شعبية"],["عصيد",2000,"اكلات شعبية"],
+["مضغوط دجاج",3500,"مضغوط وفحسة"],["مضغوط لحم",4500,"مضغوط وفحسة"],["فحسة لحم",3000,"مضغوط وفحسة"],["فحسة خاصة",5000,"مضغوط وفحسة"],
+["مشاوي مشكل",5000,"مشاوي"],["كباب",3000,"مشاوي"],["شيش طاووق",3000,"مشاوي"],["أوصال لحم",3500,"مشاوي"],
+["رز لحم عادي",4000,"رز لحم"],["رز لحم خاص",5000,"رز لحم"],["رز لحم عائلي",10000,"رز لحم"],
+["رز دجاج عادي",3000,"رز دجاج"],["رز دجاج خاص",4000,"رز دجاج"],["رز دجاج عائلي",8000,"رز دجاج"],
+["سلطة",1000,"مقبلات"],["حمص",1000,"مقبلات"],["متبل",1000,"مقبلات"],["بطاطس",1000,"مقبلات"],
+["عصير مانجو",1000,"عصائر"],["عصير فراولة",600,"عصائر"],["عصير برتقال",1000,"عصائر"],["كوكتيل",1500,"عصائر"],
+["بيبسي",500,"مشروبات"],["كوكاكولا",500,"مشروبات"],["ماء",300,"مشروبات"],["مشروب طاقة",1500,"مشروبات"]
+].map((p,i)=>({id:"p"+(i+1),name:p[0],price:p[1],category:p[2]}));
+
+let categories=[],products=[],cart=[],sales=[],password="1234";
+let currentCategory="الكل",adminTab="products",editingProductId=null,editingCategoryId=null;
+
+function escapeHTML(v){
+return String(v??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m]));
+}
+function saveData(){
+localStorage.setItem("restaurant_cashier_data_v3",JSON.stringify({categories,products,cart,password,sales}));
+}
+function loadData(){
+try{
+let raw=localStorage.getItem("restaurant_cashier_data_v3");
+if(!raw){
+raw=localStorage.getItem("restaurant_cashier_data_v2");
+}
+if(raw){
+let d=JSON.parse(raw);
+categories=Array.isArray(d.categories)&&d.categories.length?d.categories:JSON.parse(JSON.stringify(defaultCategories));
+products=Array.isArray(d.products)?d.products:JSON.parse(JSON.stringify(defaultProducts));
+cart=Array.isArray(d.cart)?d.cart:[];
+password=d.password||"1234";
+sales=Array.isArray(d.sales)?d.sales:[];
+}else{
+categories=JSON.parse(JSON.stringify(defaultCategories));
+products=JSON.parse(JSON.stringify(defaultProducts));
+cart=[];sales=[];password="1234";
+}
+}catch(e){
+categories=JSON.parse(JSON.stringify(defaultCategories));
+products=JSON.parse(JSON.stringify(defaultProducts));
+cart=[];sales=[];password="1234";
+}
+}
+
+function renderCategories(){
+const box=document.getElementById("categories");
+const all=`<button type="button" class="category ${currentCategory==="الكل"?"active":""}" data-category="__ALL__">🍽️ الكل</button>`;
+const cats=categories.map(c=>`<button type="button" class="category ${currentCategory===c.name?"active":""}" data-category="${escapeHTML(c.name)}">${escapeHTML(c.icon)} ${escapeHTML(c.name)}</button>`).join("");
+box.innerHTML=all+cats;
+}
+function selectCategory(name){currentCategory=name;renderCategories();renderProducts();}
+
+function initMenuEvents(){
+const categoryBox=document.getElementById("categories");
+const productBox=document.getElementById("products");
+categoryBox.addEventListener("click",e=>{
+const btn=e.target.closest(".category");
+if(!btn)return;
+const value=btn.getAttribute("data-category");
+selectCategory(value==="__ALL__"?"الكل":value);
+});
+productBox.addEventListener("click",e=>{
+const btn=e.target.closest(".add");
+if(!btn)return;
+const id=btn.getAttribute("data-product-id");
+if(id)addToCart(id);
+});
+}
+function renderProducts(){
+const box=document.getElementById("products");
+const q=document.getElementById("searchInput").value.trim().toLowerCase();
+let arr=products.filter(p=>(currentCategory==="الكل"||p.category===currentCategory)&&(!q||p.name.toLowerCase().includes(q)||p.category.toLowerCase().includes(q)));
+if(!arr.length){box.innerHTML='<div class="empty">لا توجد أصناف مطابقة للبحث أو القسم المحدد.</div>';return}
+box.innerHTML=arr.map(p=>{
+let cat=categories.find(c=>c.name===p.category);
+let icon=cat?cat.icon:"🍽️";
+return `<div class="product">
+<div class="product-icon">${escapeHTML(icon)}</div>
+<div class="product-name">${escapeHTML(p.name)}</div>
+<div class="product-bottom"><span class="price">${Number(p.price).toLocaleString()} ريال</span><button type="button" class="add" data-product-id="${escapeHTML(p.id)}">+ إضافة</button></div>
+</div>`
+}).join("");
+}
+function addToCart(id){
+const p=products.find(x=>x.id===id);if(!p)return;
+const old=cart.find(x=>x.id===id);
+if(old)old.qty++;else cart.push({id:p.id,name:p.name,price:Number(p.price),qty:1,category:p.category});
+saveData();renderCart();
+}
+function changeQty(id,delta){
+const x=cart.find(i=>i.id===id);if(!x)return;
+x.qty+=delta;if(x.qty<=0)cart=cart.filter(i=>i.id!==id);
+saveData();renderCart();
+}
+function cartTotal(){return cart.reduce((s,x)=>s+Number(x.price)*Number(x.qty),0)}
+function cartCount(){return cart.reduce((s,x)=>s+Number(x.qty),0)}
+function renderCart(){
+const count=cartCount(),total=cartTotal();
+document.getElementById("cartMiniCount").textContent=count?`${count} قطعة`:"لا توجد أصناف";
+document.getElementById("cartMiniTotal").textContent=`${total.toLocaleString()} ريال`;
+const list=document.getElementById("cartList");
+if(!cart.length){
+list.innerHTML='<div class="empty">السلة فارغة<br><small>أضف الأصناف من القائمة</small></div>';
+document.getElementById("cartTotalBox").innerHTML="";
+return;
+}
+list.innerHTML=cart.map(x=>`<div class="cart-row">
+<div class="cart-row-info"><strong>${escapeHTML(x.name)}</strong><small>${Number(x.price).toLocaleString()} ريال × ${x.qty}</small></div>
+<div class="qty"><button onclick="changeQty('${x.id}',-1)">−</button><span>${x.qty}</span><button onclick="changeQty('${x.id}',1)">+</button></div>
+<strong>${(x.price*x.qty).toLocaleString()}</strong>
+</div>`).join("");
+document.getElementById("cartTotalBox").innerHTML=`<div class="cart-total"><span>الإجمالي</span><span>${total.toLocaleString()} ريال</span></div><button class="confirm" onclick="confirmOrder()">✅ تأكيد وتسجيل الطلب</button>`;
+}
+function openCart(){document.getElementById("cartOverlay").classList.add("show")}
+function closeCart(e){if(e&&e.target!==document.getElementById("cartOverlay"))return;document.getElementById("cartOverlay").classList.remove("show")}
+
+function confirmOrder(){
+if(!cart.length){alert("السلة فارغة.");return}
+const total=cartTotal(),count=cartCount();
+const orderItems=cart.map(item=>{
+const p=products.find(x=>x.id===item.id);
+return {id:item.id,name:item.name,category:p?p.category:(item.category||"غير مصنف"),price:Number(item.price),qty:Number(item.qty)};
+});
+sales.push({
+id:"order_"+Date.now()+"_"+Math.random().toString(36).slice(2,8),
+date:new Date().toISOString(),
+items:orderItems,
+total,
+count
+});
+cart=[];
+saveData();renderCart();closeCart();
+alert(`تم تسجيل الطلب بنجاح ✓\nالإجمالي: ${total.toLocaleString()} ريال\nعدد القطع: ${count}`);
+}
+
+function openLogin(){document.getElementById("loginPassword").value="";document.getElementById("loginOverlay").classList.add("show");setTimeout(()=>document.getElementById("loginPassword").focus(),100)}
+function closeLogin(e){if(e&&e.target!==document.getElementById("loginOverlay"))return;document.getElementById("loginOverlay").classList.remove("show")}
+function login(){
+if(document.getElementById("loginPassword").value===password){closeLogin();openAdmin()}
+else alert("كلمة المرور غير صحيحة.");
+}
+function openAdmin(){document.getElementById("adminOverlay").classList.add("show");renderAdmin()}
+function closeAdmin(e){if(e&&e.target!==document.getElementById("adminOverlay"))return;document.getElementById("adminOverlay").classList.remove("show")}
+function switchAdminTab(tab){
+adminTab=tab;
+document.getElementById("tabProducts").classList.toggle("active",tab==="products");
+document.getElementById("tabCategories").classList.toggle("active",tab==="categories");
+renderAdmin();
+}
+function renderAdmin(){
+const box=document.getElementById("adminContent");
+if(adminTab==="products"){
+box.innerHTML=`<div class="item-list">${products.map(p=>`<div class="item-admin">
+<div class="item-admin-info"><strong>${escapeHTML(p.name)}</strong><small>${escapeHTML(p.category)} • ${Number(p.price).toLocaleString()} ريال</small></div>
+<button class="edit-btn" onclick="editProduct('${p.id}')">تعديل</button><button class="delete-btn" onclick="deleteProduct('${p.id}')">حذف</button>
+</div>`).join("")}</div>`;
+}else{
+box.innerHTML=`<div class="item-list">${categories.map(c=>`<div class="item-admin">
+<div class="item-admin-info"><strong>${escapeHTML(c.icon)} ${escapeHTML(c.name)}</strong><small>${products.filter(p=>p.category===c.name).length} صنف</small></div>
+<button class="edit-btn" onclick="editCategory('${c.id}')">تعديل</button><button class="delete-btn" onclick="deleteCategory('${c.id}')">حذف</button>
+</div>`).join("")}</div>`;
+}
+}
+function openProductForm(id=null){
+closeAdmin();
+editingProductId=id;
+document.getElementById("productFormTitle").textContent=id?"✏️ تعديل صنف":"➕ إضافة صنف";
+document.getElementById("productCategory").innerHTML=categories.map(c=>`<option value="${escapeHTML(c.name)}">${escapeHTML(c.icon)} ${escapeHTML(c.name)}</option>`).join("");
+if(id){
+const p=products.find(x=>x.id===id);if(!p)return;
+document.getElementById("productName").value=p.name;
+document.getElementById("productPrice").value=p.price;
+document.getElementById("productCategory").value=p.category;
+}else{
+document.getElementById("productName").value="";
+document.getElementById("productPrice").value="";
+if(categories[0])document.getElementById("productCategory").value=categories[0].name;
+}
+document.getElementById("productFormOverlay").classList.add("show");
+}
+function closeProductForm(e){if(e&&e.target!==document.getElementById("productFormOverlay"))return;document.getElementById("productFormOverlay").classList.remove("show")}
+function saveProduct(){
+const name=document.getElementById("productName").value.trim();
+const price=Number(document.getElementById("productPrice").value);
+const category=document.getElementById("productCategory").value;
+if(!name||!Number.isFinite(price)||price<0||!category){alert("أكمل بيانات الصنف.");return}
+if(editingProductId){
+const p=products.find(x=>x.id===editingProductId);if(p){p.name=name;p.price=price;p.category=category}
+}else products.push({id:"p"+Date.now(),name,price,category});
+saveData();closeProductForm();renderAdmin();renderProducts();
+}
+function editProduct(id){openProductForm(id)}
+function deleteProduct(id){
+const p=products.find(x=>x.id===id);if(!p)return;
+if(!confirm(`حذف الصنف «${p.name}»؟`))return;
+products=products.filter(x=>x.id!==id);cart=cart.filter(x=>x.id!==id);saveData();renderAdmin();renderProducts();renderCart();
+}
+function openCategoryForm(id=null){
+closeAdmin();
+editingCategoryId=id;
+document.getElementById("categoryFormTitle").textContent=id?"✏️ تعديل قسم":"📂 إضافة قسم";
+if(id){
+const c=categories.find(x=>x.id===id);if(!c)return;
+document.getElementById("categoryName").value=c.name;document.getElementById("categoryIcon").value=c.icon;
+}else{document.getElementById("categoryName").value="";document.getElementById("categoryIcon").value="📂"}
+document.getElementById("categoryFormOverlay").classList.add("show");
+}
+function closeCategoryForm(e){if(e&&e.target!==document.getElementById("categoryFormOverlay"))return;document.getElementById("categoryFormOverlay").classList.remove("show")}
+function saveCategory(){
+const name=document.getElementById("categoryName").value.trim();
+const icon=document.getElementById("categoryIcon").value.trim()||"📂";
+if(!name){alert("اكتب اسم القسم.");return}
+if(editingCategoryId){
+const c=categories.find(x=>x.id===editingCategoryId);if(c){
+const old=c.name;c.name=name;c.icon=icon;products.forEach(p=>{if(p.category===old)p.category=name});
+if(currentCategory===old)currentCategory=name;
+}}
+else{
+if(categories.some(c=>c.name===name)){alert("هذا القسم موجود.");return}
+categories.push({id:"c"+Date.now(),name,icon});
+}
+saveData();closeCategoryForm();renderCategories();renderProducts();renderAdmin();
+}
+function editCategory(id){openCategoryForm(id)}
+function deleteCategory(id){
+const c=categories.find(x=>x.id===id);if(!c)return;
+const n=products.filter(p=>p.category===c.name).length;
+if(n){alert("لا يمكن حذف قسم يحتوي على أصناف. انقل الأصناف أولاً.");return}
+if(!confirm(`حذف القسم «${c.name}»؟`))return;
+categories=categories.filter(x=>x.id!==id);
+if(currentCategory===c.name)currentCategory="الكل";
+saveData();renderCategories();renderProducts();renderAdmin();
+}
+
+function exportData(){
+const data={version:3,app:"كاشير المطعم",date:new Date().toISOString(),categories,products,password,sales};
+const blob=new Blob([JSON.stringify(data,null,2)],{type:"application/json"});
+const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="restaurant-backup-"+new Date().toISOString().slice(0,10)+".json";a.click();URL.revokeObjectURL(a.href);
+}
+function triggerImport(){document.getElementById("importFile").click()}
+function importData(e){
+const file=e.target.files[0];if(!file)return;
+const reader=new FileReader();
+reader.onload=()=>{
+try{
+const d=JSON.parse(reader.result);
+if(!Array.isArray(d.categories)||!Array.isArray(d.products))throw new Error();
+categories=d.categories;products=d.products;password=d.password||"1234";sales=Array.isArray(d.sales)?d.sales:[];cart=[];
+saveData();currentCategory="الكل";renderCategories();renderProducts();renderCart();renderAdmin();
+alert("تمت استعادة البيانات بنجاح ✓");
+}catch(err){alert("ملف النسخة الاحتياطية غير صالح.");}
+e.target.value="";
+};reader.readAsText(file);
+}
+function changePassword(){
+const p=prompt("اكتب كلمة المرور الجديدة:");
+if(p===null)return;
+if(p.trim().length<4){alert("كلمة المرور يجب أن تكون 4 أحرف/أرقام على الأقل.");return}
+password=p.trim();saveData();alert("تم تغيير كلمة المرور ✓");
+}
+function resetData(){
+if(!confirm("سيتم إعادة الأصناف والأقسام إلى البيانات الأصلية.\nسجل المبيعات والتقارير سيبقى محفوظًا.\nهل تريد المتابعة؟"))return;
+categories=JSON.parse(JSON.stringify(defaultCategories));
+products=JSON.parse(JSON.stringify(defaultProducts));
+cart=[];currentCategory="الكل";saveData();renderCategories();renderProducts();renderCart();renderAdmin();
+alert("تمت إعادة بيانات القائمة بنجاح ✓");
+}
+
+function getLocalMonthKey(date){
+const d=new Date(date);
+return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0");
+}
+function getLocalDayKey(date){
+const d=new Date(date);
+return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");
+}
+function formatReportDay(key){
+const d=new Date(key+"T12:00:00");
+return d.toLocaleDateString("ar-YE",{weekday:"long",day:"numeric",month:"long"});
+}
+function openReports(){
+closeAdmin();
+const overlay=document.getElementById("reportsOverlay");
+overlay.classList.add("show");
+const input=document.getElementById("reportMonth");
+if(!input.value){
+const now=new Date();
+input.value=now.getFullYear()+"-"+String(now.getMonth()+1).padStart(2,"0");
+}
+renderReports();
+}
+function closeReports(e){if(e&&e.target!==document.getElementById("reportsOverlay"))return;document.getElementById("reportsOverlay").classList.remove("show")}
+function renderReports(){
+const month=document.getElementById("reportMonth").value;
+const content=document.getElementById("reportContent");
+if(!month){content.innerHTML='<div class="report-empty">اختر شهرًا لعرض التقرير.</div>';return}
+const monthSales=sales.filter(o=>getLocalMonthKey(o.date)===month);
+let total=0,count=0,orders=monthSales.length;
+const categoryStats={},productStats={},dailyStats={};
+
+monthSales.forEach(order=>{
+const orderTotal=Number(order.total)||0;
+total+=orderTotal;
+count+=Number(order.count)||0;
+const day=getLocalDayKey(order.date);
+dailyStats[day]=(dailyStats[day]||0)+orderTotal;
+(order.items||[]).forEach(item=>{
+const qty=Number(item.qty)||0,price=Number(item.price)||0,cat=item.category||"غير مصنف";
+if(!categoryStats[cat])categoryStats[cat]={qty:0,revenue:0};
+categoryStats[cat].qty+=qty;
+categoryStats[cat].revenue+=price*qty;
+const key=item.id||cat+"_"+item.name;
+if(!productStats[key])productStats[key]={name:item.name,category:cat,qty:0,revenue:0};
+productStats[key].qty+=qty;
+productStats[key].revenue+=price*qty;
+});
+});
+const avg=orders?total/orders:0;
+const cats=Object.entries(categoryStats).sort((a,b)=>b[1].revenue-a[1].revenue);
+const prods=Object.values(productStats).sort((a,b)=>b.qty-a.qty||b.revenue-a.revenue);
+const days=Object.entries(dailyStats).sort((a,b)=>b[0].localeCompare(a[0]));
+const monthLabel=(()=>{const [y,m]=month.split("-");return new Date(Number(y),Number(m)-1,1).toLocaleDateString("ar-YE",{month:"long",year:"numeric"})})();
+
+if(!monthSales.length){
+content.innerHTML=`<div class="report-empty">📊<br><strong>لا توجد مبيعات في ${escapeHTML(monthLabel)}</strong><br><small>عندما تضغط «تأكيد وتسجيل الطلب» سيتم حفظ العملية هنا تلقائيًا.</small></div>`;
+return;
+}
+
+let catHTML=cats.map(([name,s])=>{
+const percent=total?(s.revenue/total)*100:0;
+const c=categories.find(x=>x.name===name);
+return `<div class="report-row"><div class="report-row-top"><div class="report-row-icon">${escapeHTML(c?c.icon:"📂")}</div><div class="report-row-info"><strong>${escapeHTML(name)}</strong><small>${s.qty.toLocaleString()} قطعة • ${percent.toFixed(1)}% من الدخل</small></div><div class="report-money">${s.revenue.toLocaleString()} ريال</div></div><div class="report-progress"><span style="width:${Math.min(100,percent)}%"></span></div><div class="report-meta"><span>الكمية: ${s.qty.toLocaleString()}</span><b>الدخل: ${s.revenue.toLocaleString()} ريال</b></div></div>`;
+}).join("");
+
+let prodHTML=prods.map((p,i)=>`<div class="report-row"><div class="report-row-top"><div class="report-row-icon">${i===0?"🏆":"🍽️"}</div><div class="report-row-info"><strong>${escapeHTML(p.name)}</strong><small>${escapeHTML(p.category)}</small></div><div class="report-money">${p.revenue.toLocaleString()} ريال</div></div><div class="report-meta"><span>باع: ${p.qty.toLocaleString()} قطعة</span><b>الدخل: ${p.revenue.toLocaleString()} ريال</b></div></div>`).join("");
+
+let dayHTML=days.map(([day,amount])=>`<div class="report-day-row"><strong>📅 ${escapeHTML(formatReportDay(day))}</strong><span>${amount.toLocaleString()} ريال</span></div>`).join("");
+
+content.innerHTML=`
+<div class="report-summary">
+<div class="report-card green"><small>💰 إجمالي الدخل</small><span class="value">${total.toLocaleString()} ريال</span></div>
+<div class="report-card orange"><small>🧾 عدد الطلبات</small><span class="value">${orders.toLocaleString()}</span></div>
+<div class="report-card"><small>🍽️ إجمالي القطع</small><span class="value">${count.toLocaleString()}</span></div>
+<div class="report-card"><small>📈 متوسط الطلب</small><span class="value">${Math.round(avg).toLocaleString()} ريال</span></div>
+</div>
+<div class="note">📌 التقرير لشهر <strong>${escapeHTML(monthLabel)}</strong>. يتم حفظ كل طلب عند تأكيده، وتبقى بياناته محفوظة حتى لو عدّلت أو حذفت الصنف لاحقًا.</div>
+
+<div class="report-section"><div class="report-section-title">💰 المبيعات حسب القسم</div><div class="report-list">${catHTML}</div></div>
+<div class="report-section"><div class="report-section-title">🏆 أكثر الأصناف مبيعًا</div><div class="report-list">${prodHTML}</div></div>
+<div class="report-section"><div class="report-section-title">📅 المبيعات اليومية</div><div class="report-list">${dayHTML}</div></div>
+`;
+}
+
+loadData();
+initMenuEvents();
+renderCategories();
+renderProducts();
+renderCart();
+</script>
+</body>
+</html>
